@@ -35,3 +35,8 @@ app.get('/api/students', (req, res) => {
 
 // Export agar bisa diuji oleh supertest
 module.exports = app;
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server nyala di http://localhost:${PORT}`);
+});

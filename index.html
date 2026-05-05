@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Data Management - UAS</title>
-    <!-- Menggunakan font Google agar lebih modern -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
             --bg: #f8fafc;
             --text: #1e293b;
-            --card: #ffffff;
+            --card: #ffffff;    
             --border: #e2e8f0;
         }
 
@@ -66,7 +67,7 @@
             transition: border-color 0.2s;
         }
 
-        input:focus { outline: none; border-color: var(--primary); ring: 2px var(--primary); }
+        input:focus { outline: none; border-color: var(--primary); }
 
         button { 
             padding: 10px 24px; 
@@ -81,6 +82,14 @@
         }
 
         button:hover { background-color: var(--primary-hover); }
+
+        .btn-delete {
+            background-color: var(--danger);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-delete:hover { background-color: var(--danger-hover); }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 
@@ -97,7 +106,6 @@
             color: #166534;
         }
 
-        /* Responsif untuk HP */
         @media (max-width: 600px) {
             .form-group { grid-template-columns: 1fr; }
         }
@@ -134,6 +142,7 @@
                     <th>Nama</th>
                     <th>Skor</th>
                     <th>Grade</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -146,13 +155,14 @@
 <script>
     const API_URL = 'http://localhost:3000/api/students';
 
+    // 1. Fungsi memuat data dari database (File JSON)
     async function muatData() {
         try {
             const respons = await fetch(API_URL);
             const data = await respons.json();
             const tbody = document.querySelector('#tabelMahasiswa tbody');
             
-            tbody.innerHTML = data.length ? '' : '<tr><td colspan="3" style="text-align:center">Belum ada data.</td></tr>';
+            tbody.innerHTML = data.length ? '' : '<tr><td colspan="4" style="text-align:center">Belum ada data.</td></tr>';
             
             data.forEach(mhs => {
                 tbody.innerHTML += `
@@ -160,35 +170,66 @@
                         <td><strong>${mhs.name}</strong></td>
                         <td>${mhs.score}</td>
                         <td><span class="grade-badge">${mhs.grade}</span></td>
+                        <td>
+                            <button class="btn-delete" onclick="hapusData(${mhs.id})">Hapus</button>
+                        </td>
                     </tr>
                 `;
             });
         } catch (e) {
-            console.error("Gagal koneksi ke server. Pastikan backend nyala!");
+            console.error("Gagal koneksi ke server.");
         }
     }
 
+    // 2. Fungsi mengirim data baru (Create)
     async function kirimData() {
-        const name = document.getElementById('inputNama').value;
-        const score = document.getElementById('inputNilai').value;
+        const nameInput = document.getElementById('inputNama');
+        const scoreInput = document.getElementById('inputNilai');
+        
+        const name = nameInput.value.trim();
+        const score = parseInt(scoreInput.value);
 
-        if(!name || !score) return alert("Harap isi Nama dan Nilai!");
+        if(!name || isNaN(score)) return alert("Harap isi Nama dan Nilai dengan benar!");
 
-        const respons = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, score: parseInt(score) })
-        });
+        try {
+            const respons = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, score })
+            });
 
-        if (respons.ok) {
-            document.getElementById('inputNama').value = '';
-            document.getElementById('inputNilai').value = '';
-            muatData();
-        } else {
-            alert("Gagal menyimpan: Pastikan nilai antara 0-100");
+            if (respons.ok) {
+                nameInput.value = '';
+                scoreInput.value = '';
+                muatData();
+            } else {
+                const errorData = await respons.json();
+                alert("Gagal menyimpan: " + (errorData.message || "Pastikan nilai antara 0-100"));
+            }
+        } catch (error) {
+            alert("Server tidak merespons. Pastikan backend jalan!");
         }
     }
 
+    // 3. Fungsi menghapus data (Delete)
+    async function hapusData(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+            try {
+                const respons = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (respons.ok) {
+                    muatData();
+                } else {
+                    alert("Gagal menghapus data.");
+                }
+            } catch (error) {
+                alert("Gagal koneksi ke server.");
+            }
+        }
+    }
+
+    // Jalankan saat halaman dibuka
     muatData();
 </script>
 

@@ -43,10 +43,12 @@ const readData = () => {
 
 const writeData = (data) => {
     try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-        console.log("📍 File ditulis ke: ", DATA_FILE); // Tambahkan baris ini
+        // Gunakan path absolut yang sudah didefinisikan di awal
+        const jsonContent = JSON.stringify(data, null, 2);
+        fs.writeFileSync(DATA_FILE, jsonContent, 'utf8');
+        console.log("✅ Berhasil menyimpan ke: " + DATA_FILE);
     } catch (err) {
-        console.error("❌ Gagal menulis ke file:", err);
+        console.error("❌ Gagal menulis file:", err);
     }
 };
 // --- ROUTES ---

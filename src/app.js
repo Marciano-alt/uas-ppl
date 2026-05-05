@@ -1,12 +1,17 @@
 const express = require('express');
+const cors = require('cors'); // Library untuk mengizinkan akses dari browser (Frontend)
 const { calculateGrade, validateName } = require('./math');
+
 const app = express();
 
-// Middleware agar Express bisa membaca data JSON
-app.use(express.json());
+// --- MIDDLEWARE ---
+app.use(cors()); // PENTING: Harus di atas agar Frontend bisa mengakses API
+app.use(express.json()); // Agar Express bisa membaca data JSON dari body request
 
 // Database sederhana di memori
 let students = [];
+
+// --- ROUTES ---
 
 // Fitur 1: Tambah Mahasiswa & Nilai (Create)
 app.post('/api/students', (req, res) => {
@@ -33,10 +38,14 @@ app.get('/api/students', (req, res) => {
   res.status(200).json(students);
 });
 
-// Export agar bisa diuji oleh supertest
+// Export agar bisa diuji oleh supertest (Penting untuk testing Anda)
 module.exports = app;
 
+// --- SERVER START ---
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server nyala di http://localhost:${PORT}`);
-});
+// Cek jika file ini dijalankan langsung (bukan via test)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server nyala di http://localhost:${PORT}`);
+    });
+}

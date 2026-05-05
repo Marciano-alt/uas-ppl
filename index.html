@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Management - UAS</title>
+    <!-- Menggunakan font Google agar lebih modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 800px; 
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card { 
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        h2 { margin-top: 0; font-weight: 600; color: #0f172a; font-size: 1.25rem; }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        label { display: block; font-size: 0.875rem; margin-bottom: 5px; font-weight: 600; }
+
+        input { 
+            width: 100%;
+            padding: 10px 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { outline: none; border-color: var(--primary); ring: 2px var(--primary); }
+
+        button { 
+            padding: 10px 24px; 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: var(--primary-hover); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+
+        th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: #64748b; font-size: 0.875rem; text-transform: uppercase; }
+
+        td { padding: 16px 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+
+        .grade-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* Responsif untuk HP */
+        @media (max-width: 600px) {
+            .form-group { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 style="margin-bottom: 5px;">Student Dashboard</h1>
+        <p style="color: #64748b; margin-top: 0;">Management Information System v1.0</p>
+    </div>
+
+    <div class="card">
+        <h2>Tambah Data Baru</h2>
+        <div class="form-group">
+            <div>
+                <label>Nama Mahasiswa</label>
+                <input type="text" id="inputNama" placeholder="Contoh: Marciano">
+            </div>
+            <div>
+                <label>Nilai Akhir</label>
+                <input type="number" id="inputNilai" placeholder="0 - 100">
+            </div>
+            <button onclick="kirimData()">Simpan</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Daftar Mahasiswa Terdaftar</h2>
+        <table id="tabelMahasiswa">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Skor</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data akan dimuat otomatis -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:3000/api/students';
+
+    async function muatData() {
+        try {
+            const respons = await fetch(API_URL);
+            const data = await respons.json();
+            const tbody = document.querySelector('#tabelMahasiswa tbody');
+            
+            tbody.innerHTML = data.length ? '' : '<tr><td colspan="3" style="text-align:center">Belum ada data.</td></tr>';
+            
+            data.forEach(mhs => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${mhs.name}</strong></td>
+                        <td>${mhs.score}</td>
+                        <td><span class="grade-badge">${mhs.grade}</span></td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            console.error("Gagal koneksi ke server. Pastikan backend nyala!");
+        }
+    }
+
+    async function kirimData() {
+        const name = document.getElementById('inputNama').value;
+        const score = document.getElementById('inputNilai').value;
+
+        if(!name || !score) return alert("Harap isi Nama dan Nilai!");
+
+        const respons = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, score: parseInt(score) })
+        });
+
+        if (respons.ok) {
+            document.getElementById('inputNama').value = '';
+            document.getElementById('inputNilai').value = '';
+            muatData();
+        } else {
+            alert("Gagal menyimpan: Pastikan nilai antara 0-100");
+        }
+    }
+
+    muatData();
+</script>
+
+</body>
+</html>

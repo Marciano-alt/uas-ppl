@@ -1,6 +1,6 @@
 # UAS Pengujian Perangkat Lunak - Student API
 
-Proyek ini adalah implementasi REST API sederhana untuk pengelolaan data nilai mahasiswa yang dilengkapi dengan pengujian otomatis (Automated Testing) dan laporan cakupan kode (Code Coverage).
+Proyek ini adalah implementasi REST API sgederhana untuk pengelolaan data nilai mahasiswa yang dilengkapi dengan pengujian otomatis (Automated Testing) dan laporan cakupan kode (Code Coverage).
 
 ## 🚀 Fitur Utama
 *   **REST API**: Endpoint untuk menambah data mahasiswa dan mengambil daftar mahasiswa.
